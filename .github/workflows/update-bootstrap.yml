@@ -21,18 +21,26 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y wget unzip
+        sudo apt-get install -y wget unzip jq
+
+    - name: Get latest Bootstrap version
+      id: bootstrap_version
+      run: |
+        LATEST_RELEASE=$(curl --silent "https://api.github.com/repos/twbs/bootstrap/releases/latest" | jq -r .tag_name)
+        echo "Latest Bootstrap version: $LATEST_RELEASE"
+        echo "::set-output name=version::$LATEST_RELEASE"
 
     - name: Download latest Bootstrap release
       run: |
-        wget https://github.com/twbs/bootstrap/releases/latest/download/bootstrap-5.x.x-dist.zip -O bootstrap.zip
+        LATEST_VERSION=${{ steps.bootstrap_version.outputs.version }}
+        wget https://github.com/twbs/bootstrap/releases/download/${LATEST_VERSION}/bootstrap-${LATEST_VERSION}-dist.zip -O bootstrap.zip
         unzip bootstrap.zip -d bootstrap
 
     - name: Copy Bootstrap CSS and JS to assets
       run: |
         mkdir -p assets/css assets/js
-        cp -r bootstrap/bootstrap-5.x.x-dist/css/* assets/css/
-        cp -r bootstrap/bootstrap-5.x.x-dist/js/* assets/js/
+        cp -r bootstrap/css/* assets/css/
+        cp -r bootstrap/js/* assets/js/
 
     - name: Commit changes
       run: |
