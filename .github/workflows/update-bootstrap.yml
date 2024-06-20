@@ -40,8 +40,8 @@ jobs:
     - name: Copy Bootstrap CSS and JS to assets
       run: |
         mkdir -p assets/css assets/js
-        cp -r bootstrap/css/* assets/css/
-        cp -r bootstrap/js/* assets/js/
+        cp -r bootstrap/bootstrap-${LATEST_VERSION}-dist/css/* assets/css/
+        cp -r bootstrap/bootstrap-${LATEST_VERSION}-dist/js/* assets/js/
 
     - name: Commit changes
       run: |
