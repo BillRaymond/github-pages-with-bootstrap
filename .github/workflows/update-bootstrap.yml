@@ -1,6 +1,5 @@
 name: Update Bootstrap
 
-# Trigger the workflow on a schedule (every Sunday at midnight) and when manually dispatched
 on:
   schedule:
     - cron: '0 0 * * 0' # Run weekly on Sunday at midnight
@@ -11,55 +10,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout the repository
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    # Step 2: Set up Node.js environment
     - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
         node-version: 14
 
-    # Step 3: Install necessary dependencies
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y wget unzip jq
 
-    # Step 4: Download and extract the latest Bootstrap version
     - name: Download and extract the latest Bootstrap version
       run: |
-        # Fetch the latest release tag from the Bootstrap GitHub repository
         LATEST_RELEASE=$(curl --silent "https://api.github.com/repos/twbs/bootstrap/releases/latest" | jq -r .tag_name)
         LATEST_VERSION=${LATEST_RELEASE#v}
         echo "Latest Bootstrap version: $LATEST_VERSION"
         echo "version=$LATEST_VERSION" >> $GITHUB_ENV
 
-        # Download the latest Bootstrap distribution zip file
         wget https://github.com/twbs/bootstrap/releases/download/v${LATEST_VERSION}/bootstrap-${LATEST_VERSION}-dist.zip -O bootstrap.zip
-        # Extract the downloaded zip file
         unzip bootstrap.zip -d bootstrap
 
-        # Copy the CSS and JS files to the appropriate directories
         mkdir -p assets/css assets/js
         cp -r bootstrap/bootstrap-${LATEST_VERSION}-dist/css/* assets/css/
         cp -r bootstrap/bootstrap-${LATEST_VERSION}-dist/js/* assets/js/
       env:
         version: ${{ env.version }}
 
-    # Step 5: Commit and push the changes to the repository
     - name: Commit and push changes
       run: |
-        # Configure Git with a dummy user for the commit
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        # Add the changes to the staging area
         git add assets/css/* assets/js/*
         git status
-        # Commit the changes with a message, or skip if there are no changes
         git commit -m "Update Bootstrap to version $LATEST_VERSION" || echo "No changes to commit"
-        # Push the changes to the main branch
         git push origin main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
