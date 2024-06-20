@@ -30,4 +30,4 @@ layout: home
 </div>
 
 
-**The rest of Jekyll Minima stuff will display blow:**
+**The rest of Jekyll Minima stuff will display below:**
