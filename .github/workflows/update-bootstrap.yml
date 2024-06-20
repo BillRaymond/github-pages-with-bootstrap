@@ -2,8 +2,8 @@ name: Update Bootstrap
 
 on:
   schedule:
-    - cron: '0 0 * * *' # This runs the action nightly at midnight UTC
-  workflow_dispatch: # Allows the workflow to be run manually
+    - cron: '0 0 * * 0' # Run weekly on Sunday at midnight
+  workflow_dispatch:
 
 jobs:
   update-bootstrap:
@@ -16,39 +16,35 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '14'
+        node-version: 14
 
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y wget unzip jq
 
-    - name: Get latest Bootstrap version
-      id: bootstrap_version
+    - name: Download and extract the latest Bootstrap version
       run: |
         LATEST_RELEASE=$(curl --silent "https://api.github.com/repos/twbs/bootstrap/releases/latest" | jq -r .tag_name)
         LATEST_VERSION=${LATEST_RELEASE#v}
         echo "Latest Bootstrap version: $LATEST_VERSION"
         echo "version=$LATEST_VERSION" >> $GITHUB_ENV
 
-    - name: Download latest Bootstrap release
-      run: |
-        LATEST_VERSION=${{ env.version }}
         wget https://github.com/twbs/bootstrap/releases/download/v${LATEST_VERSION}/bootstrap-${LATEST_VERSION}-dist.zip -O bootstrap.zip
         unzip bootstrap.zip -d bootstrap
 
-    - name: Copy Bootstrap CSS and JS to assets
-      run: |
         mkdir -p assets/css assets/js
         cp -r bootstrap/bootstrap-${LATEST_VERSION}-dist/css/* assets/css/
         cp -r bootstrap/bootstrap-${LATEST_VERSION}-dist/js/* assets/js/
+      env:
+        version: ${{ env.version }}
 
-    - name: Commit changes
+    - name: Commit and push changes
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add assets/css assets/js
-        git commit -m 'Update Bootstrap to latest version'
-        git push
+        git add assets/css/* assets/js/*
+        git commit -m "Update Bootstrap to version $LATEST_VERSION"
+        git push origin main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
