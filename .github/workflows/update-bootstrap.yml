@@ -1,0 +1,45 @@
+name: Update Bootstrap
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # This runs the action nightly at midnight UTC
+  workflow_dispatch: # Allows the workflow to be run manually
+
+jobs:
+  update-bootstrap:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget unzip
+
+    - name: Download latest Bootstrap release
+      run: |
+        wget https://github.com/twbs/bootstrap/releases/latest/download/bootstrap-5.x.x-dist.zip -O bootstrap.zip
+        unzip bootstrap.zip -d bootstrap
+
+    - name: Copy Bootstrap CSS and JS to assets
+      run: |
+        mkdir -p assets/css assets/js
+        cp -r bootstrap/bootstrap-5.x.x-dist/css/* assets/css/
+        cp -r bootstrap/bootstrap-5.x.x-dist/js/* assets/js/
+
+    - name: Commit changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add assets/css assets/js
+        git commit -m 'Update Bootstrap to latest version'
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
