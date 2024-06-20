@@ -45,6 +45,7 @@ $on-laptop:        800px !default;
 
 // Import partials.
 @import
+  "minima/override-bootstrap",
   "minima/base",
   "minima/layout",
   "minima/syntax-highlighting"

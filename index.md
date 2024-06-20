@@ -25,6 +25,9 @@ layout: home
   </nav>
 
 <div class="container">
-    <h1>Welcome to My Jekyll Site</h1>
-    <p>This is a sample page using Bootstrap CSS and JavaScript.</p>
+    <h1 class="text-primary">Hello, Bootstrap!</h1>
+    <button class="btn btn-primary">Primary Button</button>
 </div>
+
+
+**The rest of Jekyll Minima stuff will display blow:**
